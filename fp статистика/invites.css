@@ -1,0 +1,688 @@
+/* ───────── Инвайты ─────────
+   Раздел собран из тех же деталей, что и калькулятор: поля, кнопки, подсказки, плитки.
+   Здесь только то, чего в popup.css не было. Цвета — из тех же переменных; новый один,
+   янтарный, для статуса «Скоро истекает». */
+:root {
+  --warn-text: #8a5300;
+  --warn-mark: #e79a1b;
+  --warn-band: #ffc24a;
+  --match: rgba(200, 242, 106, 0.42);
+  --scrim: rgba(11, 15, 20, 0.5);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --warn-text: #f5c56a;
+    --warn-mark: #f5c56a;
+    --match: rgba(200, 242, 106, 0.16);
+    --scrim: rgba(0, 0, 0, 0.62);
+  }
+}
+
+/* Четвёртая вкладка: чуть плотнее, чтобы счётчики не упирались в край */
+.tabs {
+  gap: 16px;
+}
+.tab__count--warn,
+.tab[aria-selected="true"] .tab__count--warn {
+  background: var(--warn-band);
+  color: var(--brand-ink);
+}
+
+/* ───────── Сводка, она же фильтр ───────── */
+.inv-tiles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+.inv-tile {
+  position: relative;
+  display: block;
+  cursor: pointer;
+}
+.inv-tile__input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.inv-tile__body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  height: 100%;
+  padding: 7px 9px 8px;
+  border: 1px solid var(--rule-strong);
+  border-radius: 10px;
+  background: var(--surface);
+}
+.inv-tile__name {
+  color: var(--ink-soft);
+  font: 500 12px/1.25 var(--font);
+}
+.inv-tile__count {
+  font: 600 17px/1.1 var(--font);
+}
+.inv-tile[data-tone="soon"] .inv-tile__count {
+  color: var(--warn-text);
+}
+.inv-tile[data-tone="expired"] .inv-tile__count {
+  color: var(--minus-text);
+}
+.inv-tile:hover .inv-tile__body {
+  border-color: var(--ink);
+}
+.inv-tile__input:checked + .inv-tile__body {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+}
+.inv-tile__input:checked + .inv-tile__body .inv-tile__name {
+  color: var(--paper);
+  opacity: 0.72;
+}
+.inv-tile__input:checked + .inv-tile__body .inv-tile__count {
+  color: var(--paper);
+}
+.inv-tile__input:focus-visible + .inv-tile__body {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.inv-seats {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 9px 0 0;
+}
+.inv-seats__item {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.inv-seats dt {
+  color: var(--ink-soft);
+  font-size: 13px;
+}
+.inv-seats dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+/* ───────── Поиск и добавление ───────── */
+.inv-bar {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+}
+.inv-bar .input {
+  flex: 1;
+}
+.inv-bar .btn {
+  flex: none;
+}
+
+.btn--ink {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+}
+.btn--danger {
+  border-color: var(--minus-text);
+  background: var(--minus-text);
+  color: var(--surface);
+}
+.link-btn--danger {
+  color: var(--minus-text);
+}
+
+/* ───────── Группы списка ───────── */
+.inv-group {
+  margin-top: 14px;
+}
+.inv-group__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 28px;
+  margin-bottom: 6px;
+}
+.inv-group__title {
+  margin: 0;
+  font: 600 14px/1.3 var(--font);
+}
+.inv-group__count {
+  color: var(--ink-soft);
+  font-size: 13px;
+}
+.inv-group__head .link-btn {
+  font-size: 12.5px;
+}
+.inv-sort {
+  min-width: 0;
+  height: 28px;
+  margin-left: auto;
+  padding: 0 4px;
+  border: 1px solid var(--rule-strong);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  font: 500 12.5px/1 var(--font);
+  cursor: pointer;
+}
+.inv-sort:hover {
+  border-color: var(--ink-soft);
+}
+.inv-sort:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+
+/* Отметки и кнопка повторной покупки остаются на виду, пока листаешь истёкшие */
+.inv-bulk {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0 -16px 6px;
+  padding: 6px 16px;
+  background: var(--paper);
+}
+.inv-bulk .check {
+  align-items: center;
+  font-size: 13px;
+}
+.inv-bulk .check__input {
+  margin: 0;
+}
+.inv-bulk .btn {
+  height: 32px;
+  padding: 0 12px;
+  font-size: 13px;
+}
+
+.check {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  cursor: pointer;
+}
+.check__input {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin: 2px 0 0;
+  accent-color: var(--ink);
+  cursor: pointer;
+}
+.check__input:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.inv-note {
+  margin: 12px 0 0;
+  color: var(--ink-soft);
+  font-size: 13px;
+  line-height: 1.45;
+}
+.inv-foot {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--rule);
+}
+
+/* ───────── Карточка аккаунта ───────── */
+.acc {
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  background: var(--surface);
+}
+.acc + .acc {
+  margin-top: 6px;
+}
+.acc__top {
+  display: flex;
+  align-items: stretch;
+}
+.acc__pick {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 38px;
+  margin-right: -12px;
+  cursor: pointer;
+}
+.acc__pick .check__input {
+  margin: 0;
+}
+.acc__head {
+  display: grid;
+  flex: 1;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 4px 8px;
+  min-width: 0;
+  padding: 9px 8px 9px 12px;
+  border: 0;
+  border-radius: 9px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.acc__head:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+.acc__title {
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.acc__label {
+  margin-left: 7px;
+  color: var(--ink-soft);
+  font-size: 12.5px;
+  font-weight: 400;
+}
+.acc__chev {
+  flex: none;
+  color: var(--ink-soft);
+}
+.acc__head[aria-expanded="true"] .acc__chev {
+  transform: rotate(180deg);
+}
+.acc__head:hover .acc__chev {
+  color: var(--ink);
+}
+.acc__line {
+  display: flex;
+  grid-column: 1 / -1;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+  color: var(--ink-soft);
+  font-size: 12.5px;
+}
+.acc__when {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Статус: точка и слово одного цвета */
+.status {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 5px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.status::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.status[data-status="active"] {
+  color: var(--plus-text);
+}
+.status[data-status="soon"] {
+  color: var(--warn-text);
+}
+.status[data-status="expired"] {
+  color: var(--minus-text);
+}
+
+/* Пять мест подписки. Закрашенное — занято; янтарное и красное — у участника кончается или кончился срок */
+.seats {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 3px;
+}
+.seats__pip {
+  width: 6px;
+  height: 14px;
+  border: 1.5px solid var(--rule-strong);
+  border-radius: 2px;
+}
+.seats__pip[data-status="active"] {
+  border-color: var(--ink);
+  background: var(--ink);
+}
+.seats__pip[data-status="soon"] {
+  border-color: var(--warn-mark);
+  background: var(--warn-mark);
+}
+.seats__pip[data-status="expired"] {
+  border-color: var(--minus-text);
+  background: var(--minus-text);
+}
+.seats__count {
+  margin-left: 3px;
+  color: var(--ink-soft);
+  font: 500 12.5px/1 var(--font);
+}
+
+.acc__body {
+  padding: 0 12px 12px;
+  border-top: 1px solid var(--rule);
+}
+.acc__warn {
+  margin: 10px 0 0;
+  color: var(--warn-text);
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+
+.kv {
+  margin: 8px 0 0;
+}
+.kv__row {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  align-items: baseline;
+  column-gap: 8px;
+  min-height: 25px;
+  padding: 2px 0;
+}
+.kv dt {
+  color: var(--ink-soft);
+  font-size: 12.5px;
+}
+/* Длинный email занимает строку целиком, а «Скопировать» уходит под него */
+.kv dd {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 10px;
+  min-width: 0;
+  margin: 0;
+}
+.kv__value {
+  min-width: 0;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.kv__value--quiet {
+  color: var(--ink-soft);
+  font-weight: 400;
+}
+.kv__tools {
+  display: flex;
+  flex: none;
+  gap: 10px;
+  margin-left: auto;
+  font-size: 12.5px;
+}
+
+.acc__sub {
+  margin: 12px 0 4px;
+  font: 600 13px/1.3 var(--font);
+}
+.members {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: seat;
+}
+.member {
+  display: grid;
+  grid-template-columns: 12px minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 2px 8px;
+  padding: 5px 0;
+  border-top: 1px solid var(--rule);
+  counter-increment: seat;
+}
+.member::before {
+  content: counter(seat);
+  color: var(--ink-soft);
+  font-size: 12.5px;
+}
+.member__name {
+  min-width: 0;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.member__tools {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12.5px;
+}
+.member__line {
+  display: flex;
+  grid-column: 2 / -1;
+  align-items: baseline;
+  gap: 8px;
+  color: var(--ink-soft);
+  font-size: 12.5px;
+}
+.member--free .member__name {
+  color: var(--ink-soft);
+  font-weight: 400;
+}
+/* Участник, найденный поиском */
+.member.is-match {
+  margin: 0 -6px;
+  padding: 5px 6px;
+  border-top-color: transparent;
+  border-radius: 6px;
+  background: var(--match);
+}
+.member.is-match + .member {
+  border-top-color: transparent;
+}
+
+.acc__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  margin-top: 12px;
+}
+.acc__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  font-size: 13px;
+}
+
+.empty .btn {
+  margin-top: 14px;
+}
+
+/* ───────── Параметры раздела ───────── */
+.inv-warn {
+  display: grid;
+  grid-template-columns: 84px minmax(0, 1fr);
+  align-items: start;
+  gap: 10px;
+}
+.inv-warn .hint {
+  margin: 0;
+}
+#invites-settings .check {
+  margin-top: 12px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+/* ───────── Окна раздела ───────── */
+.modal {
+  width: min(368px, calc(100% - 24px));
+  max-width: none;
+  max-height: calc(100% - 24px);
+  padding: 0;
+  overflow: auto;
+  border: 1px solid var(--rule-strong);
+  border-radius: 14px;
+  background: var(--paper);
+  box-shadow: 0 16px 48px var(--shadow);
+  color: var(--ink);
+}
+.modal::backdrop {
+  background: var(--scrim);
+}
+.modal__form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+.modal__title {
+  margin: 0;
+  font: 600 16px/1.3 var(--font);
+}
+.modal__body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.modal__text {
+  margin: 0;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+.modal__text--soft {
+  margin-top: -8px;
+  color: var(--ink-soft);
+  font-size: 13px;
+}
+.modal__text--warn {
+  color: var(--warn-text);
+}
+.modal__list {
+  max-height: 150px;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.modal__list span {
+  color: var(--ink-soft);
+}
+.modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 2px;
+}
+.modal .hint {
+  margin: 6px 0 0;
+}
+.modal .check {
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.cols--2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.field__error {
+  margin: 5px 0 0;
+  color: var(--minus-text);
+  font-size: 12.5px;
+  line-height: 1.35;
+}
+
+/* Поле даты: набирается руками как ДД.ММ.ГГГГ, значок открывает календарь браузера.
+   Поле самого браузера лежит под текстовым невидимым — к нему календарь и прикрепляется. */
+.date {
+  position: relative;
+}
+.date .input {
+  padding-right: 34px;
+}
+.date__native {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+.date__pick {
+  position: absolute;
+  top: 50%;
+  right: 5px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--ink-soft);
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+.date__pick:hover {
+  background: var(--rule);
+  color: var(--ink);
+}
+.date__pick:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+
+/* Поле пароля с кнопкой «Показать» внутри */
+.secret {
+  position: relative;
+}
+.secret .input {
+  padding-right: 86px;
+}
+.secret .link-btn {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  font-size: 12.5px;
+  transform: translateY(-50%);
+}
+
+.history {
+  max-height: 300px;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+.history__item {
+  display: grid;
+  grid-template-columns: 78px minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 8px;
+  padding: 6px 0;
+  border-top: 1px solid var(--rule);
+  font-size: 13px;
+}
+.history__item:first-child {
+  border-top: 0;
+}
+.history__date {
+  color: var(--ink-soft);
+}
+.history__to {
+  font-weight: 500;
+  white-space: nowrap;
+}

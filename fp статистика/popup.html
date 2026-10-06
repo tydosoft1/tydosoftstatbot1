@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>tydosoft — прибыль с заказа</title>
+  <script src="mode.js"></script>
+  <link rel="stylesheet" href="popup.css">
+  <link rel="stylesheet" href="invites.css">
+</head>
+<body>
+  <!-- Логотип tydosoft: плитка с буквой t и слово из штрихов одной толщины. Рисуется через <use>. -->
+  <svg class="defs" width="0" height="0" aria-hidden="true">
+    <symbol id="tydosoft-logo" viewBox="0 0 884 180">
+      <g transform="translate(0 0)"><rect class="mark__tile" width="140" height="140" rx="30.8"/><path d="M62.3,26.6 V88.9 A23.8 23.8 0 0 0 86.1,112.7 H104.3 M30.1,56.7 H104.3" class="mark__t" fill="none" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/></g>
+      <path transform="translate(160 0)" d="M12,50 V90 A40 40 0 0 0 92,90 M92,50 V138 A30 30 0 0 1 62,168 H42 M131,90 a40 40 0 1 0 80 0 a40 40 0 1 0 -80 0 M211,12 V130 M250,90 a40 40 0 1 0 80 0 a40 40 0 1 0 -80 0 M415.28,57.69 A27 20 0 0 0 367,70 C367,87 421,93 421,110 A27 20 0 0 1 372.72,122.31 M458,90 a40 40 0 1 0 80 0 a40 40 0 1 0 -80 0 M593,130 V38 A26 26 0 0 1 619,12 H629 M577,50 H623 M676,20 V106 A24 24 0 0 0 700,130 H712 M660,50 H706" fill="none" stroke="currentColor" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+  </svg>
+
+  <header class="band">
+    <div class="band__inner">
+      <div class="band__row">
+        <svg class="logo" viewBox="0 0 884 180" role="img" aria-label="tydosoft"><use href="#tydosoft-logo"/></svg>
+        <div class="band__tools">
+          <span class="band__status" id="rates-stamp"></span>
+          <button class="band__btn" type="button" id="refresh-calc" title="Обновить курсы" aria-label="Обновить курсы">
+            <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M13.9 2.6v3.7h-3.7"/>
+              <path d="M12.6 9.8a5 5 0 1 1-1.2-5.2l2.5 1.7"/>
+            </svg>
+          </button>
+          <button class="band__btn" type="button" id="open-window" title="Открыть в отдельном окне" aria-label="Открыть в отдельном окне">
+            <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M9.5 2.5h4v4"/>
+              <path d="M13.5 2.5 8 8"/>
+              <path d="M12 9.5v3a1 1 0 0 1-1 1H3.5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h3"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="tabs" role="tablist" aria-label="Разделы калькулятора">
+        <button class="tab" type="button" role="tab" id="tab-calc" aria-controls="panel-calc" aria-selected="true">Расчёт</button>
+        <button class="tab" type="button" role="tab" id="tab-params" aria-controls="panel-params" aria-selected="false" tabindex="-1">Параметры</button>
+        <button class="tab" type="button" role="tab" id="tab-orders" aria-controls="panel-orders" aria-selected="false" tabindex="-1">Заказы<span class="tab__count" id="orders-count" hidden></span></button>
+        <button class="tab" type="button" role="tab" id="tab-invites" aria-controls="panel-invites" aria-selected="false" tabindex="-1">Инвайты<span class="tab__count tab__count--warn" id="invites-count" hidden></span></button>
+      </div>
+    </div>
+  </header>
+
+  <main class="main" id="main">
+
+    <!-- Расчёт -->
+    <section class="panel" id="panel-calc" role="tabpanel" aria-labelledby="tab-calc">
+      <div class="heading">
+        <h1 class="heading__title" id="section-title"></h1>
+        <select class="heading__select" id="section-select" aria-label="Раздел" hidden></select>
+        <span class="heading__aside" id="section-period"></span>
+      </div>
+      <div class="plans" id="plans" role="radiogroup" aria-label="Тариф"></div>
+
+      <div class="price">
+        <label class="label" for="sale">Цена на площадке</label>
+        <div class="price__row">
+          <input class="input input--price" id="sale" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" placeholder="0,00">
+          <div class="seg" role="radiogroup" aria-label="Валюта цены">
+            <label class="seg__item">
+              <input class="seg__input" type="radio" name="sale-currency" value="USD">
+              <span class="seg__body" title="Цена в долларах">$</span>
+            </label>
+            <label class="seg__item">
+              <input class="seg__input" type="radio" name="sale-currency" value="RUB">
+              <span class="seg__body" title="Цена в рублях">₽</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="sheet">
+        <div class="row" id="row-sale">
+          <span class="row__op"></span>
+          <span class="row__label">Цена на площадке</span>
+          <span class="row__note" id="note-sale"></span>
+          <span class="row__value" id="val-sale"></span>
+        </div>
+        <div class="row" id="row-fee" hidden>
+          <span class="row__op">−</span>
+          <span class="row__label">Комиссия</span>
+          <span class="row__note" id="note-fee"></span>
+          <span class="row__value" id="val-fee"></span>
+        </div>
+        <div class="row" id="row-sub">
+          <span class="row__op">−</span>
+          <span class="row__label">Подписка</span>
+          <span class="row__note" id="note-sub"></span>
+          <span class="row__value" id="val-sub"></span>
+        </div>
+        <div class="row" id="row-card">
+          <span class="row__op">−</span>
+          <span class="row__label">Карта</span>
+          <span class="row__note" id="note-card"></span>
+          <span class="row__value" id="val-card"></span>
+        </div>
+        <div class="row" id="row-proxy">
+          <span class="row__op">−</span>
+          <span class="row__label">Прокси</span>
+          <span class="row__note" id="note-proxy"></span>
+          <span class="row__value" id="val-proxy"></span>
+        </div>
+
+        <div class="total">
+          <span class="total__label">Прибыль</span>
+          <span class="total__value"><span class="mark" id="profit" data-sign="none">—</span></span>
+          <!-- Прибыль в рублях и BYN, а пока расчёт невозможен — что нужно заполнить -->
+          <div class="total__other" id="profit-other"></div>
+        </div>
+
+        <div class="row row--quiet" id="row-cost">
+          <span class="row__op"></span>
+          <span class="row__label">Себестоимость</span>
+          <span class="row__note" id="note-cost"></span>
+          <span class="row__value" id="val-cost"></span>
+        </div>
+        <div class="row row--quiet" id="row-margin">
+          <span class="row__op"></span>
+          <span class="row__label">Маржа</span>
+          <span class="row__note"></span>
+          <span class="row__value" id="val-margin"></span>
+        </div>
+      </div>
+
+      <button class="btn btn--primary" type="button" id="record">
+        <svg class="btn__plus" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" aria-hidden="true">
+          <path d="M8 2.6v10.8M2.6 8h10.8"/>
+        </svg>
+        Записать заказ
+      </button>
+    </section>
+
+    <!-- Параметры -->
+    <section class="panel" id="panel-params" role="tabpanel" aria-labelledby="tab-params" hidden>
+      <div class="group">
+        <div class="group__head">
+          <h2 class="group__title">Курсы валют</h2>
+          <button class="link-btn" type="button" id="refresh-params">Обновить курсы</button>
+        </div>
+        <div class="cols cols--3">
+          <div class="field">
+            <label class="label" for="rate-rub">1 USD =</label>
+            <div class="unit">
+              <input class="input" id="rate-rub" data-path="rates.rub" data-rule="rate" type="text" inputmode="decimal" autocomplete="off" spellcheck="false">
+              <span class="unit__suffix">RUB</span>
+            </div>
+          </div>
+          <div class="field">
+            <label class="label" for="rate-ngn">1 USDT =</label>
+            <div class="unit">
+              <input class="input" id="rate-ngn" data-path="rates.ngn" data-rule="rate" type="text" inputmode="decimal" autocomplete="off" spellcheck="false">
+              <span class="unit__suffix">NGN</span>
+            </div>
+          </div>
+          <div class="field">
+            <label class="label" for="rate-byn">1 USD =</label>
+            <div class="unit">
+              <input class="input" id="rate-byn" data-path="rates.byn" data-rule="rate" type="text" inputmode="decimal" autocomplete="off" spellcheck="false">
+              <span class="unit__suffix">BYN</span>
+            </div>
+          </div>
+        </div>
+        <p class="hint">
+          <span class="hint__status" id="rates-status"></span>
+          Источник: <a href="https://www.exchangerate-api.com" target="_blank" rel="noopener noreferrer">Rates By Exchange Rate API</a>
+        </p>
+      </div>
+
+      <div id="price-groups"></div>
+
+      <div class="group">
+        <h2 class="group__title">Издержки на одного клиента</h2>
+        <div class="costs">
+          <span></span>
+          <span class="costs__th" id="th-amount">Стоимость</span>
+          <span class="costs__th" id="th-currency">Валюта</span>
+          <span class="costs__th" id="th-clients">Клиентов</span>
+          <span class="costs__th costs__th--num">На клиента</span>
+
+          <span class="costs__name" id="name-card">Карта</span>
+          <input class="input" id="card-amount" data-path="costs.card.amount" data-rule="amount" aria-labelledby="name-card th-amount" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" placeholder="0">
+          <select class="input input--select" id="card-currency" data-path="costs.card.currency" aria-labelledby="name-card th-currency">
+            <option value="USD">USD</option>
+            <option value="RUB">RUB</option>
+            <option value="BYN">BYN</option>
+            <option value="NGN">NGN</option>
+          </select>
+          <input class="input" id="card-clients" data-path="costs.card.clients" data-rule="clients" aria-labelledby="name-card th-clients" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" placeholder="1">
+          <output class="costs__per" id="card-per" for="card-amount card-currency card-clients"></output>
+
+          <span class="costs__name" id="name-proxy">Прокси</span>
+          <input class="input" id="proxy-amount" data-path="costs.proxy.amount" data-rule="amount" aria-labelledby="name-proxy th-amount" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" placeholder="0">
+          <select class="input input--select" id="proxy-currency" data-path="costs.proxy.currency" aria-labelledby="name-proxy th-currency">
+            <option value="USD">USD</option>
+            <option value="RUB">RUB</option>
+            <option value="BYN">BYN</option>
+            <option value="NGN">NGN</option>
+          </select>
+          <input class="input" id="proxy-clients" data-path="costs.proxy.clients" data-rule="clients" aria-labelledby="name-proxy th-clients" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" placeholder="1">
+          <output class="costs__per" id="proxy-per" for="proxy-amount proxy-currency proxy-clients"></output>
+        </div>
+        <p class="hint">Стоимость делится на число клиентов: карта за 2 $ на четверых — это 0,50 $ с заказа.</p>
+      </div>
+
+      <div class="group">
+        <h2 class="group__title">Комиссия</h2>
+        <div class="fee">
+          <div class="unit">
+            <input class="input" id="fee" data-path="costs.fee" data-rule="pct" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" placeholder="0" aria-describedby="fee-hint">
+            <span class="unit__suffix">%</span>
+          </div>
+          <label class="hint" id="fee-hint" for="fee">От цены на площадке: комиссия FunPay и вывод денег. Оставьте пустым, если вписываете цену уже без комиссии.</label>
+        </div>
+      </div>
+
+      <div class="group" id="invites-settings">
+        <h2 class="group__title">Инвайты</h2>
+        <div class="inv-warn">
+          <div class="unit">
+            <input class="input" id="invites-warn-days" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" aria-describedby="invites-warn-hint">
+            <span class="unit__suffix">дн.</span>
+          </div>
+          <label class="hint" id="invites-warn-hint" for="invites-warn-days">За сколько дней до конца срока аккаунт и участник получают статус «Скоро истекает». От 0 до 60.</label>
+        </div>
+        <label class="check">
+          <input class="check__input" type="checkbox" id="invites-notify">
+          <span>Уведомления браузера: когда подписка скоро закончится, за день до конца и после окончания</span>
+        </label>
+        <div class="actions">
+          <button class="btn" type="button" id="invites-export">Экспорт данных</button>
+          <button class="btn" type="button" id="invites-import">Импорт данных</button>
+        </div>
+        <p class="hint">В файл экспорта попадают аккаунты, пароли, участники и история. Пароли в нём не зашифрованы — храните файл там, где его не увидят посторонние.</p>
+        <input type="file" id="invites-file" accept=".json,application/json" hidden>
+      </div>
+
+      <footer class="about">
+        <svg class="about__logo" viewBox="0 0 884 180" role="img" aria-label="tydosoft"><use href="#tydosoft-logo"/></svg>
+        <span id="about-version"></span>
+      </footer>
+    </section>
+
+    <!-- Заказы -->
+    <section class="panel" id="panel-orders" role="tabpanel" aria-labelledby="tab-orders" hidden>
+      <ul class="totals" id="totals" aria-label="Прибыль по периодам"></ul>
+
+      <div class="actions" id="orders-actions">
+        <button class="btn" type="button" id="export">Скачать CSV</button>
+        <button class="btn" type="button" id="clear">Очистить журнал</button>
+      </div>
+
+      <table class="orders" id="orders-table" hidden>
+        <thead>
+          <tr>
+            <th scope="col">Дата</th>
+            <th scope="col">Тариф</th>
+            <th scope="col" class="num">Цена</th>
+            <th scope="col" class="num">Прибыль</th>
+            <th scope="col"><span class="sr-only">Удалить</span></th>
+          </tr>
+        </thead>
+        <tbody id="orders-body"></tbody>
+      </table>
+      <p class="hint" id="orders-more" hidden></p>
+      <div class="empty" id="orders-empty">
+        <svg class="empty__mark" viewBox="0 0 140 140" width="56" height="56" aria-hidden="true"><rect class="mark__tile" width="140" height="140" rx="30.8"/><path d="M62.3,26.6 V88.9 A23.8 23.8 0 0 0 86.1,112.7 H104.3 M30.1,56.7 H104.3" class="mark__t" fill="none" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <p class="empty__title">Заказов пока нет</p>
+        <p class="empty__text">Посчитайте прибыль на вкладке «Расчёт» и нажмите «Записать заказ».</p>
+      </div>
+    </section>
+
+    <!-- Инвайты: аккаунты с семейной подпиской и их участники -->
+    <section class="panel" id="panel-invites" role="tabpanel" aria-labelledby="tab-invites" hidden>
+      <div id="inv-board" hidden>
+        <!-- Сводка и фильтр в одном: плитка показывает число и отбирает список -->
+        <div class="inv-tiles" id="inv-tiles" role="radiogroup" aria-label="Какие аккаунты показать"></div>
+        <dl class="inv-seats">
+          <div class="inv-seats__item" title="В действующих аккаунтах">
+            <dt>Участников</dt>
+            <dd id="inv-members"></dd>
+          </div>
+          <div class="inv-seats__item" title="В действующих аккаунтах">
+            <dt>Свободных мест</dt>
+            <dd id="inv-free"></dd>
+          </div>
+        </dl>
+
+        <div class="inv-bar">
+          <input class="input" id="inv-search" type="search" autocomplete="off" spellcheck="false" placeholder="Email или ник участника" aria-label="Поиск по email аккаунта и нику участника">
+          <button class="btn btn--ink" type="button" id="inv-add">Добавить аккаунт</button>
+        </div>
+
+        <div id="inv-list"></div>
+
+        <p class="hint inv-foot">Порог «Скоро истекает», уведомления и резервная копия&nbsp;— <button class="link-btn" type="button" data-goto="invites-warn-days">в параметрах</button>.</p>
+      </div>
+
+      <div class="empty" id="inv-empty" hidden>
+        <svg class="empty__mark" viewBox="0 0 140 140" width="56" height="56" aria-hidden="true"><rect class="mark__tile" width="140" height="140" rx="30.8"/><path d="M62.3,26.6 V88.9 A23.8 23.8 0 0 0 86.1,112.7 H104.3 M30.1,56.7 H104.3" class="mark__t" fill="none" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <p class="empty__title">Аккаунтов пока нет</p>
+        <p class="empty__text">Добавьте аккаунт с семейной подпиской: срок посчитается сам, а свободные места будут на виду.</p>
+        <button class="btn btn--ink" type="button" id="inv-add-first">Добавить аккаунт</button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Окна раздела «Инвайты» -->
+  <dialog class="modal" id="inv-account" aria-labelledby="inv-account-title">
+    <form class="modal__form" id="inv-account-form" novalidate>
+      <h2 class="modal__title" id="inv-account-title"></h2>
+      <div class="field">
+        <label class="label" for="inv-acc-email">Email</label>
+        <input class="input" id="inv-acc-email" type="text" inputmode="email" autocapitalize="off" autocomplete="off" spellcheck="false" maxlength="254" placeholder="example@gmail.com" aria-describedby="inv-acc-email-error inv-acc-dup">
+        <p class="field__error" id="inv-acc-email-error" hidden></p>
+        <p class="hint" id="inv-acc-dup" hidden>Аккаунт с таким email уже есть в списке.</p>
+      </div>
+      <div class="field">
+        <label class="label" for="inv-acc-password">Пароль</label>
+        <div class="secret">
+          <input class="input" id="inv-acc-password" type="password" autocapitalize="off" autocomplete="new-password" spellcheck="false" maxlength="256" aria-describedby="inv-acc-password-error">
+          <button class="link-btn" type="button" id="inv-acc-password-toggle" aria-pressed="false">Показать</button>
+        </div>
+        <p class="field__error" id="inv-acc-password-error" hidden></p>
+      </div>
+      <div class="field">
+        <div class="cols cols--2">
+          <div>
+            <label class="label" for="inv-acc-start">Дата покупки</label>
+            <div class="date">
+              <input class="input" id="inv-acc-start" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="10" placeholder="ДД.ММ.ГГГГ" aria-describedby="inv-acc-dates-error">
+              <input class="date__native" type="date" tabindex="-1" aria-hidden="true" min="2000-01-01" max="2100-12-31">
+              <button class="date__pick" type="button" tabindex="-1" title="Календарь" aria-label="Выбрать дату покупки в календаре"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="3.5" width="11" height="10" rx="1.5"/><path d="M2.5 6.5h11M5.5 2v3M10.5 2v3"/></svg></button>
+            </div>
+          </div>
+          <div>
+            <label class="label" for="inv-acc-end">Дата окончания</label>
+            <div class="date">
+              <input class="input" id="inv-acc-end" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="10" placeholder="ДД.ММ.ГГГГ" aria-describedby="inv-acc-dates-error inv-acc-hint">
+              <input class="date__native" type="date" tabindex="-1" aria-hidden="true" min="2000-01-01" max="2100-12-31">
+              <button class="date__pick" type="button" tabindex="-1" title="Календарь" aria-label="Выбрать дату окончания в календаре"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="3.5" width="11" height="10" rx="1.5"/><path d="M2.5 6.5h11M5.5 2v3M10.5 2v3"/></svg></button>
+            </div>
+          </div>
+        </div>
+        <p class="field__error" id="inv-acc-dates-error" hidden></p>
+        <p class="hint"><span id="inv-acc-hint"></span> <button class="link-btn" type="button" id="inv-acc-auto" hidden>Посчитать заново</button></p>
+      </div>
+      <div class="field">
+        <label class="label" for="inv-acc-label">Название, если нужно</label>
+        <input class="input" id="inv-acc-label" type="text" autocomplete="off" maxlength="60" placeholder="Например, Spotify Family">
+      </div>
+      <p class="field__error" id="inv-account-error" role="alert" hidden></p>
+      <div class="modal__actions">
+        <button class="btn" type="button" data-close>Отмена</button>
+        <button class="btn btn--ink" type="submit" id="inv-account-save">Сохранить</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="modal" id="inv-member" aria-labelledby="inv-member-title">
+    <form class="modal__form" id="inv-member-form" novalidate>
+      <h2 class="modal__title" id="inv-member-title"></h2>
+      <p class="modal__text modal__text--soft" id="inv-member-account"></p>
+      <div class="field">
+        <label class="label" for="inv-mem-nick">Ник или имя</label>
+        <input class="input" id="inv-mem-nick" type="text" autocapitalize="off" autocomplete="off" spellcheck="false" maxlength="64" placeholder="@alex" aria-describedby="inv-mem-nick-error">
+        <p class="field__error" id="inv-mem-nick-error" hidden></p>
+      </div>
+      <div class="field">
+        <div class="cols cols--2">
+          <div>
+            <label class="label" for="inv-mem-start">Доступ с</label>
+            <div class="date">
+              <input class="input" id="inv-mem-start" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="10" placeholder="ДД.ММ.ГГГГ" aria-describedby="inv-mem-dates-error">
+              <input class="date__native" type="date" tabindex="-1" aria-hidden="true" min="2000-01-01" max="2100-12-31">
+              <button class="date__pick" type="button" tabindex="-1" title="Календарь" aria-label="Выбрать дату начала доступа в календаре"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="3.5" width="11" height="10" rx="1.5"/><path d="M2.5 6.5h11M5.5 2v3M10.5 2v3"/></svg></button>
+            </div>
+          </div>
+          <div>
+            <label class="label" for="inv-mem-end">Оплачено до</label>
+            <div class="date">
+              <input class="input" id="inv-mem-end" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="10" placeholder="ДД.ММ.ГГГГ" aria-describedby="inv-mem-dates-error">
+              <input class="date__native" type="date" tabindex="-1" aria-hidden="true" min="2000-01-01" max="2100-12-31">
+              <button class="date__pick" type="button" tabindex="-1" title="Календарь" aria-label="Выбрать в календаре дату, до которой оплачено"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="3.5" width="11" height="10" rx="1.5"/><path d="M2.5 6.5h11M5.5 2v3M10.5 2v3"/></svg></button>
+            </div>
+          </div>
+        </div>
+        <p class="field__error" id="inv-mem-dates-error" hidden></p>
+        <p class="hint">Срок участника свой и от срока аккаунта не зависит. Дату начала можно не указывать.</p>
+      </div>
+      <p class="field__error" id="inv-member-error" role="alert" hidden></p>
+      <div class="modal__actions">
+        <button class="btn" type="button" data-close>Отмена</button>
+        <button class="btn btn--ink" type="submit" id="inv-member-save">Сохранить</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="modal" id="inv-confirm" aria-labelledby="inv-confirm-title">
+    <form class="modal__form" id="inv-confirm-form" novalidate>
+      <h2 class="modal__title" id="inv-confirm-title"></h2>
+      <div class="modal__body" id="inv-confirm-body"></div>
+      <div class="modal__actions">
+        <button class="btn" type="button" data-close>Отмена</button>
+        <button class="btn btn--ink" type="submit" id="inv-confirm-ok"></button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="modal" id="inv-history" aria-labelledby="inv-history-title">
+    <div class="modal__form">
+      <h2 class="modal__title" id="inv-history-title">История</h2>
+      <p class="modal__text modal__text--soft" id="inv-history-account"></p>
+      <ol class="history" id="inv-history-list"></ol>
+      <div class="modal__actions">
+        <button class="btn" type="button" data-close>Закрыть</button>
+      </div>
+    </div>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden>
+    <span id="toast-text"></span>
+    <button class="toast__action" type="button" id="toast-action" hidden></button>
+  </div>
+
+  <script src="catalog.js"></script>
+  <script src="calc.js"></script>
+  <script src="popup.js"></script>
+  <script src="invites-core.js"></script>
+  <script src="invites.js"></script>
+</body>
+</html>

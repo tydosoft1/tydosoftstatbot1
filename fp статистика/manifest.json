@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "tydosoft — прибыль FunPay",
+  "short_name": "tydosoft",
+  "version": "1.2.0",
+  "description": "Калькулятор tydosoft: прибыль с заказа — цена на площадке минус подписка в NGN по курсу USDT, карта и прокси на клиента.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_title": "tydosoft — посчитать прибыль с заказа",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": [
+    "storage",
+    "alarms",
+    "notifications"
+  ],
+  "host_permissions": [
+    "https://open.er-api.com/*"
+  ]
+}

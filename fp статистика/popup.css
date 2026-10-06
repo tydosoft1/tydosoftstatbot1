@@ -1,0 +1,985 @@
+/* ───────── Шрифты (Inter, лицензия OFL — см. fonts/OFL.txt) ───────── */
+@font-face {
+  font-family: "Inter";
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+  src: url("fonts/Inter-Regular.woff") format("woff");
+}
+@font-face {
+  font-family: "Inter";
+  font-weight: 500;
+  font-style: normal;
+  font-display: block;
+  src: url("fonts/Inter-Medium.woff") format("woff");
+}
+@font-face {
+  font-family: "Inter";
+  font-weight: 600;
+  font-style: normal;
+  font-display: block;
+  src: url("fonts/Inter-SemiBold.woff") format("woff");
+}
+@font-face {
+  font-family: "Inter Display";
+  font-weight: 800;
+  font-style: normal;
+  font-display: block;
+  src: url("fonts/InterDisplay-ExtraBold.woff") format("woff");
+}
+
+/* ───────── Цвета tydosoft ─────────
+   Чёрная лента с логотипом, бумага и чернила. Цвет один — фирменный салатовый:
+   плитка с буквой t, активная вкладка и маркер под прибылью. В минусе маркер розовый. */
+:root {
+  color-scheme: light dark;
+
+  --brand: #c8f26a;
+  --brand-ink: #0b0f14;
+  --band: #0b0f14;
+  --band-text: #ffffff;
+  --band-soft: rgba(255, 255, 255, 0.62);
+  --band-rule: rgba(255, 255, 255, 0.14);
+
+  --paper: #f1f3f6;
+  --surface: #ffffff;
+  --ink: #0b0f14;
+  --ink-soft: #55606f;
+  --rule: #d8dde5;
+  --rule-strong: #b4bdca;
+
+  --mark-plus: var(--brand);
+  --mark-minus: #ffb5c2;
+  --mark-zero: #d8dde5;
+  --on-mark: var(--brand-ink);
+
+  --plus-text: #1b7332;
+  --minus-text: #bf2640;
+  --sel-plus: var(--brand);
+  --cta-plus: var(--brand);
+  --sel-minus: #ffb5c2;
+
+  --focus: #2a62f5;
+  --shadow: rgba(11, 15, 20, 0.26);
+
+  --font: "Inter", system-ui, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-display: "Inter Display", "Inter", system-ui, "Segoe UI", sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #161b22;
+    --surface: #1f252e;
+    --ink: #e8ecf2;
+    --ink-soft: #9ca7b6;
+    --rule: #2d3541;
+    --rule-strong: #4a5566;
+
+    --mark-zero: #b4bdca;
+
+    --plus-text: #b5e86c;
+    --minus-text: #ff96a8;
+    --sel-plus: #1b7332;
+    --sel-minus: #bf2640;
+    --cta-plus: currentColor;
+
+    --focus: #8ab0ff;
+    --shadow: rgba(0, 0, 0, 0.5);
+  }
+}
+
+/* ───────── Основа ───────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 14px;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  width: 400px;
+  height: 600px;
+  margin: 0;
+  overflow: hidden;
+  background: var(--paper);
+  color: var(--ink);
+  font: 400 14px/1.4 var(--font);
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Отдельное окно: страница занимает всё окно */
+html.in-window,
+html.in-window body {
+  height: 100%;
+}
+html.in-window body {
+  width: auto;
+  min-width: 340px;
+}
+html.in-window #open-window {
+  display: none;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+/* контейнер с символом логотипа: сам не рисуется, из него берут <use> */
+.defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ───────── Шапка tydosoft ─────────
+   Чёрная лента одинакова в светлой и тёмной теме: логотип, состояние курсов, вкладки. */
+.band {
+  flex: none;
+  background: var(--band);
+  color: var(--band-text);
+}
+.band__inner {
+  max-width: 440px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+.band__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  height: 46px;
+}
+
+/* Плитка с буквой t — в логотипе и в пустом журнале; цвета берутся из переменных */
+.mark__tile {
+  fill: var(--brand);
+}
+.mark__t {
+  stroke: var(--brand-ink);
+}
+
+.logo {
+  display: block;
+  flex: none;
+  width: auto;
+  height: 32px;
+  margin-top: 6px; /* хвост «y» уходит под строку, поэтому знак опущен, чтобы стоять по центру */
+  color: var(--band-text);
+}
+
+.band__tools {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  margin-right: -6px;
+}
+.band__status {
+  margin-right: 6px;
+  overflow: hidden;
+  color: var(--band-soft);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.band__btn {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  color: var(--band-soft);
+  cursor: pointer;
+}
+.band__btn:hover:not(:disabled) {
+  background: var(--band-rule);
+  color: var(--band-text);
+}
+.band__btn:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 1px;
+}
+.band__btn:disabled {
+  cursor: default;
+}
+.band__btn[aria-busy="true"] {
+  color: var(--brand);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .band__btn[aria-busy="true"] svg {
+    animation: spin 0.9s linear infinite;
+  }
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.tabs {
+  display: flex;
+  gap: 20px;
+  height: 36px;
+}
+.tab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 100%;
+  margin: 0;
+  padding: 0 0 3px;
+  border: 0;
+  background: none;
+  color: var(--band-soft);
+  font: 600 13.5px/1 var(--font);
+  cursor: pointer;
+}
+.tab:hover {
+  color: var(--band-text);
+}
+.tab[aria-selected="true"] {
+  color: var(--band-text);
+}
+/* Активная вкладка подчёркнута тем же маркером, что и прибыль */
+.tab[aria-selected="true"]::after {
+  content: "";
+  position: absolute;
+  right: -3px;
+  bottom: 0;
+  left: -3px;
+  height: 4px;
+  border-radius: 2px 3px 0 0;
+  background: var(--brand);
+  transform: skewX(-20deg);
+}
+.tab:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: -4px;
+  border-radius: 8px;
+}
+.tab__count {
+  padding: 3px 6px;
+  border-radius: 999px;
+  background: var(--band-rule);
+  color: var(--band-text);
+  font: 600 11.5px/1 var(--font);
+}
+.tab[aria-selected="true"] .tab__count {
+  background: var(--brand);
+  color: var(--brand-ink);
+}
+
+.main {
+  flex: 1;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-color: var(--rule-strong) transparent;
+  scrollbar-width: thin;
+}
+
+.panel {
+  max-width: 440px;
+  margin: 0 auto;
+  padding: 12px 16px 14px;
+}
+
+/* ───────── Раздел и тарифы ───────── */
+.heading {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.heading__title {
+  margin: 0;
+  font: 600 15px/1.2 var(--font);
+}
+.heading__select {
+  height: 28px;
+  padding: 0 4px;
+  border: 1px solid var(--rule-strong);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  font: 600 14px/1 var(--font);
+}
+.heading__select:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+.heading__aside {
+  color: var(--ink-soft);
+  font-size: 13px;
+}
+
+.plans {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+.plan {
+  position: relative;
+  display: block;
+  cursor: pointer;
+}
+.plan__input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.plan__body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  height: 100%;
+  padding: 7px 9px 8px;
+  border: 1px solid var(--rule-strong);
+  border-radius: 10px;
+  background: var(--surface);
+}
+.plan__name {
+  font: 600 13px/1.2 var(--font);
+}
+.plan__profit {
+  color: var(--ink-soft);
+  font: 500 12.5px/1.2 var(--font);
+  white-space: nowrap;
+}
+.plan[data-sign="plus"] .plan__profit {
+  color: var(--plus-text);
+}
+.plan[data-sign="minus"] .plan__profit {
+  color: var(--minus-text);
+}
+.plan:hover .plan__body {
+  border-color: var(--ink);
+}
+.plan__input:checked + .plan__body {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+}
+.plan__input:checked + .plan__body .plan__profit {
+  color: var(--paper);
+  opacity: 0.7;
+}
+.plan[data-sign="plus"] .plan__input:checked + .plan__body .plan__profit {
+  color: var(--sel-plus);
+  opacity: 1;
+}
+.plan[data-sign="minus"] .plan__input:checked + .plan__body .plan__profit {
+  color: var(--sel-minus);
+  opacity: 1;
+}
+.plan__input:focus-visible + .plan__body {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* ───────── Поля ───────── */
+.label {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--ink-soft);
+  font: 500 12.5px/1.3 var(--font);
+}
+
+.input {
+  width: 100%;
+  min-width: 0;
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--rule-strong);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  font: 500 14px/1 var(--font);
+  font-variant-numeric: tabular-nums;
+}
+.input::placeholder {
+  color: var(--ink-soft);
+  opacity: 0.55;
+}
+.input:hover {
+  border-color: var(--ink-soft);
+}
+.input:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+.input[aria-invalid="true"] {
+  border-color: var(--minus-text);
+  box-shadow: inset 0 0 0 1px var(--minus-text);
+}
+.input--select {
+  padding: 0 4px;
+  cursor: pointer;
+}
+
+.price {
+  margin-top: 12px;
+}
+.price__row {
+  display: flex;
+  gap: 6px;
+}
+.input--price {
+  flex: 1;
+  height: 42px;
+  padding: 0 12px;
+  font: 600 20px/1 var(--font);
+}
+
+.seg {
+  display: flex;
+  flex: none;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--rule-strong);
+  border-radius: 8px;
+  background: var(--surface);
+}
+.seg__item {
+  position: relative;
+  cursor: pointer;
+}
+.seg__input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.seg__body {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 34px;
+  border-radius: 6px;
+  color: var(--ink-soft);
+  font: 600 16px/1 var(--font);
+}
+.seg__input:checked + .seg__body {
+  background: var(--ink);
+  color: var(--paper);
+}
+.seg__input:focus-visible + .seg__body {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* ───────── Расчёт столбиком ───────── */
+.sheet {
+  margin-top: 12px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 12px auto minmax(0, 1fr) auto;
+  align-items: baseline;
+  column-gap: 6px;
+  min-height: 23px;
+  padding: 2px 0;
+}
+.row__op {
+  color: var(--ink-soft);
+}
+.row__note {
+  overflow: hidden;
+  color: var(--ink-soft);
+  font-size: 12.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.row__value {
+  font-weight: 500;
+  text-align: right;
+  white-space: nowrap;
+}
+.row--quiet .row__label {
+  color: var(--ink-soft);
+}
+.row--quiet .row__note {
+  text-align: right;
+}
+
+.total {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  row-gap: 4px;
+  margin: 5px 0 4px;
+  padding: 9px 0 8px;
+  border-top: 1.5px solid var(--ink);
+  border-bottom: 1px solid var(--rule);
+}
+.total__label {
+  padding-left: 18px;
+  font: 600 15px/1.2 var(--font);
+}
+.total__value {
+  text-align: right;
+}
+.total__other {
+  display: flex;
+  grid-column: 1 / -1;
+  justify-content: flex-end;
+  gap: 14px;
+  min-height: 18px;
+  color: var(--ink-soft);
+  font: 500 13px/1.35 var(--font);
+}
+.total__other.is-issues {
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+}
+.total__other.is-issues .link-btn {
+  text-align: right;
+}
+
+/* Маркер под прибылью */
+.mark {
+  position: relative;
+  z-index: 0;
+  display: inline-block;
+  margin-right: -8px;
+  padding: 1px 8px 2px;
+  color: var(--ink-soft);
+  font: 800 30px/1.1 var(--font-display);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+.mark::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 1px -1px 0;
+  border-radius: 4px 9px 5px 10px;
+  background: transparent;
+  transform: skewX(-10deg);
+}
+.mark[data-sign="plus"],
+.mark[data-sign="minus"],
+.mark[data-sign="zero"] {
+  color: var(--on-mark);
+}
+.mark[data-sign="plus"]::before {
+  background: var(--mark-plus);
+}
+.mark[data-sign="minus"]::before {
+  background: var(--mark-minus);
+}
+.mark[data-sign="zero"]::before {
+  background: var(--mark-zero);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .mark.is-drawing::before {
+    animation: mark-draw 260ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+}
+@keyframes mark-draw {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* ───────── Кнопки ───────── */
+.btn {
+  height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--rule-strong);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink);
+  font: 600 13.5px/1 var(--font);
+  cursor: pointer;
+}
+.btn:hover:not(:disabled) {
+  border-color: var(--ink);
+}
+.btn:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.btn--primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 40px;
+  margin-top: 10px;
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 14px;
+}
+.btn__plus {
+  flex: none;
+  color: var(--cta-plus);
+}
+.btn.is-armed {
+  border-color: var(--minus-text);
+  color: var(--minus-text);
+}
+
+.link-btn {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 500;
+  text-align: left;
+  text-decoration: underline;
+  text-decoration-color: var(--rule-strong);
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.link-btn:hover:not(:disabled) {
+  text-decoration-color: currentColor;
+}
+.link-btn:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+.link-btn:disabled {
+  color: var(--ink-soft);
+  text-decoration: none;
+  cursor: default;
+}
+
+/* ───────── Параметры ───────── */
+.group + .group,
+#price-groups + .group,
+.group + #price-groups {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--rule);
+}
+#price-groups .group + .group {
+  margin-top: 16px;
+}
+.group__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.group__head .link-btn {
+  font-size: 12.5px;
+}
+.group__title {
+  margin: 0 0 9px;
+  font: 600 14px/1.3 var(--font);
+}
+
+.cols {
+  display: grid;
+  gap: 8px;
+}
+.cols--3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.cols--4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.unit {
+  position: relative;
+}
+.unit .input {
+  padding-right: 42px;
+}
+.unit__suffix {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  color: var(--ink-soft);
+  font: 500 12px/1 var(--font);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.hint {
+  margin: 8px 0 0;
+  color: var(--ink-soft);
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+.hint__status.is-error {
+  color: var(--minus-text);
+}
+.hint a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--rule-strong);
+  text-underline-offset: 3px;
+}
+.hint a:hover {
+  color: var(--ink);
+  text-decoration-color: currentColor;
+}
+.hint a:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+.costs {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) 72px 64px minmax(72px, auto);
+  align-items: center;
+  gap: 6px;
+}
+.costs__th {
+  color: var(--ink-soft);
+  font: 500 12px/1.2 var(--font);
+}
+.costs__th--num {
+  text-align: right;
+}
+.costs__name {
+  font-weight: 500;
+}
+.costs__per {
+  font-weight: 500;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.fee {
+  display: grid;
+  grid-template-columns: 84px minmax(0, 1fr);
+  align-items: start;
+  gap: 10px;
+}
+.fee .hint {
+  margin: 0;
+}
+
+.about {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+  padding-top: 14px;
+  border-top: 1px solid var(--rule);
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+.about__logo {
+  display: block;
+  width: auto;
+  height: 18px;
+  margin-top: 3px;
+  color: var(--ink);
+}
+
+/* ───────── Заказы ───────── */
+.totals {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.totals__item {
+  display: grid;
+  grid-template-columns: 84px minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 2px 8px;
+  padding: 8px 0;
+  border-top: 1px solid var(--rule);
+}
+.totals__item:first-child {
+  padding-top: 2px;
+  border-top: 0;
+}
+.totals__name {
+  font-weight: 600;
+}
+.totals__count {
+  color: var(--ink-soft);
+  font-size: 13px;
+}
+.totals__usd {
+  font: 600 15px/1.3 var(--font);
+  text-align: right;
+  white-space: nowrap;
+}
+.totals__other {
+  display: flex;
+  grid-column: 1 / -1;
+  justify-content: flex-end;
+  gap: 14px;
+  color: var(--ink-soft);
+  font: 500 13px/1.35 var(--font);
+  white-space: nowrap;
+}
+
+.is-plus {
+  color: var(--plus-text);
+}
+.is-minus {
+  color: var(--minus-text);
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.orders {
+  width: 100%;
+  margin-top: 14px;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.orders th {
+  padding: 0 0 5px;
+  border-bottom: 1px solid var(--rule-strong);
+  color: var(--ink-soft);
+  font: 500 12px/1.2 var(--font);
+  text-align: left;
+}
+.orders td {
+  padding: 5px 0;
+  border-bottom: 1px solid var(--rule);
+  white-space: nowrap;
+}
+.orders .num {
+  padding-left: 8px;
+  text-align: right;
+}
+.orders td.num {
+  font-weight: 500;
+}
+.orders__date {
+  color: var(--ink-soft);
+}
+.orders__del {
+  width: 28px;
+  text-align: right;
+}
+
+.del {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: var(--ink-soft);
+  font: 400 17px/1 var(--font);
+  cursor: pointer;
+}
+.del:hover {
+  background: var(--rule);
+  color: var(--minus-text);
+}
+.del:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+
+.empty {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: 56px 24px 0;
+  text-align: center;
+}
+.empty__mark {
+  margin-bottom: 12px;
+}
+.empty__title {
+  margin: 0;
+  font: 600 15px/1.3 var(--font);
+}
+.empty__text {
+  max-width: 250px;
+  margin: 0;
+  color: var(--ink-soft);
+  line-height: 1.45;
+}
+
+/* ───────── Сообщение внизу ───────── */
+.toast {
+  position: fixed;
+  bottom: 14px;
+  left: 50%;
+  z-index: 10;
+  width: min(408px, calc(100% - 32px));
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--band);
+  box-shadow: 0 6px 20px var(--shadow);
+  color: var(--band-text);
+  font-size: 13px;
+  line-height: 1.35;
+}
+.toast__action {
+  flex: none;
+  padding: 2px 4px;
+  border: 0;
+  background: none;
+  color: var(--brand);
+  font: 600 13px/1.2 var(--font);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.toast__action:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
